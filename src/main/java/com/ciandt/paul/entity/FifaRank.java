@@ -13,7 +13,7 @@ public class FifaRank {
     private Integer rank;
     private String teamCode;
     private String teamName;
-    private Integer points;
+    private Double points;
 
     public Integer getYear() {
         return year;
@@ -31,7 +31,7 @@ public class FifaRank {
         return teamName;
     }
 
-    public Integer getPoints() {
+    public Double getPoints() {
         return points;
     }
 
@@ -51,7 +51,7 @@ public class FifaRank {
         this.teamName = teamName;
     }
 
-    public void setPoints(Integer points) {
+    public void setPoints(Double points) {
         this.points = points;
     }
 

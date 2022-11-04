@@ -40,6 +40,23 @@ public class FifaRankDAO {
      * Read the rank for a specific team and year
      */
     public FifaRank fetch(String teamName, Integer year) throws IOException, InterruptedException, DataNotAvailableException {
+        //quick transformations on country names
+        if (teamName.equals("Iran")) {
+            teamName = "IR Iran";
+        }
+        if (teamName.equals("South Korea")) {
+            teamName = "Korea Republic";
+        }
+        if (teamName.equals("North Korea")) {
+            teamName = "Korea DPR";
+        }
+        if (teamName.equals("Ivory Coast")) {
+            teamName = "Côte d'Ivoire";
+        }
+        if (teamName.equals("United States")) {
+            teamName = "USA";
+        }
+
         List<FifaRank> fifaRankList = this.fetch(year);
         for (FifaRank fifaRank : fifaRankList) {
             if (teamName.equals(fifaRank.getTeamName())) {
@@ -63,16 +80,21 @@ public class FifaRankDAO {
         List<FifaRank> fifaRankList = new ArrayList<>();
         FifaRank fifaRank = null;
 
+        String rankMonth = "-07"; //July as the reference for Fifa Rank
+        if (year == 2022) {
+            rankMonth = "-08"; //for 2022, we'll use August
+        }
+
         String fifaRankingCSV = s3Utils.readFile( config.getDatasetBucket(), "ranking.csv");
         Reader in = new StringReader(fifaRankingCSV);
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
         for (CSVRecord record : records) {
-            if (record.get("rank_date").startsWith(year.toString()+ "-05")) {
+            if (record.get("rank_date").startsWith(year.toString()+ rankMonth)) {
                 fifaRank = new FifaRank();
                 fifaRank.setRank(Integer.valueOf(record.get("rank")));
                 fifaRank.setTeamCode(record.get("country_abrv"));
                 fifaRank.setTeamName(record.get("country_full"));
-                fifaRank.setPoints(Integer.parseInt(record.get("total_points")));
+                fifaRank.setPoints(Double.parseDouble(record.get("total_points")));
                 fifaRankList.add(fifaRank);
             }
         }
