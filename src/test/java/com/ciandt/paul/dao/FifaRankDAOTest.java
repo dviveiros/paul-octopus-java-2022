@@ -86,4 +86,11 @@ public class FifaRankDAOTest {
         assertEquals(Integer.valueOf(1460), fifaRankList.get(0).getPoints());
     }
 
+    @Test
+    public void shouldFetchBrazilRankIn2006() throws Exception {
+        FifaRank fifaRank = fifaRankDAO.fetch( "Brazil", 2006 );
+        assertNotNull(fifaRank);
+        assertEquals(Integer.valueOf(1), fifaRank.getRank());
+    }
+
 }

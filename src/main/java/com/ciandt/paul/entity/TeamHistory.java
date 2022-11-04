@@ -6,82 +6,70 @@ import java.util.List;
 
 public class TeamHistory {
 
-    private String name;
-    private Integer previousTitles;
-    private Integer previousAppearances;
-    private Integer previousFinals;
-    private Integer previousSemifinals;
+    private String homeTeam;
+    private String awayTeam;
+    private Integer games;
+    private Double wins;
+    private Double looses;
+    private Double draws;
 
-    /**
-     * Constructor
-     */
-    public TeamHistory(List<String> row) {
-        this.setName(row.get(0));
-        this.setPreviousAppearances(Integer.parseInt(row.get(1)));
-        this.setPreviousTitles(Integer.parseInt(row.get(2)));
-        this.setPreviousFinals(Integer.parseInt(row.get(3)));
-        this.setPreviousSemifinals(Integer.parseInt(row.get(4)));
+    public String getHomeTeam() {
+        return homeTeam;
     }
 
-    /**
-     * Constructor
-     */
-    public TeamHistory(CSVRecord record) {
-        this.setName(record.get(0));
-        this.setPreviousAppearances(Integer.parseInt(record.get(1)));
-        this.setPreviousTitles(Integer.parseInt(record.get(2)));
-        this.setPreviousFinals(Integer.parseInt(record.get(3)));
-        this.setPreviousSemifinals(Integer.parseInt(record.get(4)));
+    public void setHomeTeam(String homeTeam) {
+        this.homeTeam = homeTeam;
     }
 
-    public String getName() {
-        return name;
+    public String getAwayTeam() {
+        return awayTeam;
     }
 
-    public Integer getPreviousTitles() {
-        return previousTitles;
+    public void setAwayTeam(String awayTeam) {
+        this.awayTeam = awayTeam;
     }
 
-    public Integer getPreviousAppearances() {
-        return previousAppearances;
+    public Integer getGames() {
+        return games;
     }
 
-    public Integer getPreviousFinals() {
-        return previousFinals;
+    public void setGames(Integer games) {
+        this.games = games;
     }
 
-    public Integer getPreviousSemifinals() {
-        return previousSemifinals;
+    public Double getWins() {
+        return wins;
     }
 
-    private void setName(String name) {
-        this.name = name;
+    public void setWins(Double wins) {
+        this.wins = wins;
     }
 
-    private void setPreviousTitles(Integer previousTitles) {
-        this.previousTitles = previousTitles;
+    public Double getLooses() {
+        return looses;
     }
 
-    private void setPreviousAppearances(Integer previousAppearances) {
-        this.previousAppearances = previousAppearances;
+    public void setLooses(Double looses) {
+        this.looses = looses;
     }
 
-    private void setPreviousFinals(Integer previousFinals) {
-        this.previousFinals = previousFinals;
+    public Double getDraws() {
+        return draws;
     }
 
-    private void setPreviousSemifinals(Integer previousSemifinals) {
-        this.previousSemifinals = previousSemifinals;
+    public void setDraws(Double draws) {
+        this.draws = draws;
     }
 
     @Override
     public String toString() {
         return "TeamHistory{" +
-                "name='" + name + '\'' +
-                ", previousTitles=" + previousTitles +
-                ", previousAppearances=" + previousAppearances +
-                ", previousFinals=" + previousFinals +
-                ", previousSemifinals=" + previousSemifinals +
+                "homeTeam='" + homeTeam + '\'' +
+                ", awayTeam='" + awayTeam + '\'' +
+                ", games=" + games +
+                ", wins=" + wins +
+                ", looses=" + looses +
+                ", draw=" + draws +
                 '}';
     }
 }

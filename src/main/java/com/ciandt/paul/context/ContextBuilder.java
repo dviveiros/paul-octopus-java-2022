@@ -33,9 +33,8 @@ public class ContextBuilder {
         context.setHomeFifaRank(fifaRankDAO.fetch(match.getHomeTeam(), year));
         context.setAwayFifaRank(fifaRankDAO.fetch(match.getAwayTeam(), year));
 
-        //Team history
-        context.setHomeTeamHistory(teamHistoryDAO.fetch(match.getHomeTeam(), year));
-        context.setAwayTeamHistory(teamHistoryDAO.fetch(match.getAwayTeam(), year));
+        //Teams history
+        context.setTeamsHistory(teamHistoryDAO.fetch(match.getHomeTeam(), match.getAwayTeam()));
 
         //Historical matches
         context.setHistoricalMatches(matchDAO.fetchHistoryData(year));

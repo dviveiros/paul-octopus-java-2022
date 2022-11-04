@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -28,80 +26,43 @@ public class TeamHistoryDAO {
 
     @Autowired
     private Config config;
-    @Autowired
-    private S3Utils gcsUtils;
 
-    private static Map<String, TeamHistory> allTeamHistory;
-    private static Map<Integer, List<TeamHistory>> historyCache;
+    private static final S3Utils s3Utils = new S3Utils();
+
+    private static Map<String, TeamHistory> cache;
 
     static {
-        allTeamHistory = new HashMap<>();
-        historyCache = new HashMap<>();
+        cache = new HashMap<>();
     }
 
     /**
      * Return the history for a specific team.
      */
-    public TeamHistory fetch(String teamName, Integer year) throws IOException, InterruptedException, DataNotAvailableException {
+    public TeamHistory fetch(String homeTeam, String awayTeam) throws IOException {
 
-        if (historyCache.get(year) == null) {
-            this.buildTeamHashMap(year);
+        if (cache.get(homeTeam + awayTeam) == null) {
+            this.buildTeamHashMap();
         }
 
-        return allTeamHistory.get(year + "_" + teamName);
+        return cache.get(homeTeam + awayTeam);
     }
 
-    /**
-     * Return the history for all teams
-     */
-    public List<TeamHistory> fetch(Integer year) throws IOException, InterruptedException, DataNotAvailableException {
+    private void buildTeamHashMap() throws IOException {
 
-        if (historyCache.get(year) == null) {
-            this.buildTeamHashMap(year);
+        TeamHistory history = null;
+
+        String historicalCSV = s3Utils.readFile( config.getDatasetBucket(), "historical_win-loose-draw_ratios.csv");
+        Reader in = new StringReader(historicalCSV);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
+        for (CSVRecord record : records) {
+            history = new TeamHistory();
+            history.setHomeTeam(record.get("country1"));
+            history.setAwayTeam(record.get("country2"));
+            history.setGames(Integer.parseInt(record.get("games")));
+            history.setWins(Double.parseDouble(record.get("wins")));
+            history.setLooses(Double.parseDouble(record.get("looses")));
+            history.setDraws(Double.parseDouble(record.get("draws")));
+            cache.put(history.getHomeTeam() + history.getAwayTeam(), history);
         }
-
-        return historyCache.get(year);
-    }
-
-    /**
-     * Build the internal hashmap
-     */
-    private void buildTeamHashMap(Integer year) throws IOException, InterruptedException, DataNotAvailableException {
-
-        List<TeamHistory> teamHistoryList = new ArrayList<>();
-        if (config.isDebugEnabled()) {
-            logger.debug("Loading team information for " + year);
-        }
-
-        /*
-        if (year == 2018) { //data on BigQuery
-            TeamHistory teamHistory = null;
-            String query = "SELECT * FROM paul_the_octopus_dataset.teams order by previous__titles desc";
-            List<List<String>> queryResult = bigQueryUtils.executeQuery(query);
-
-            for (List<String> row : queryResult) {
-                teamHistory = new TeamHistory(row);
-                allTeamHistory.put(year + "_" + teamHistory.getName(), teamHistory);
-                teamHistoryList.add(teamHistory);
-            }
-        } else {
-            String filename = "teams_" + year + ".csv";
-            String content = gcsUtils.readFile(config.getDatasetBucket(), filename);
-            Reader in = new StringReader(content);
-            Iterable<CSVRecord> records = CSVFormat.EXCEL.withFirstRecordAsHeader().parse(in);
-            TeamHistory teamHistory = null;
-            for (CSVRecord record : records) {
-                teamHistory = new TeamHistory(record);
-                allTeamHistory.put(year + "_" + teamHistory.getName(), teamHistory);
-                teamHistoryList.add(teamHistory);
-            }
-        }
-
-        historyCache.put(year, teamHistoryList);
-        if (config.isDebugEnabled()) {
-            logger.debug("Found " + teamHistoryList.size() + " records for " + year);
-        }
-
-         */
     }
 }

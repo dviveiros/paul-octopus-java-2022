@@ -11,8 +11,7 @@ import java.util.List;
  */
 public class Context {
 
-    private TeamHistory homeTeamHistory;
-    private TeamHistory awayTeamHistory;
+    private TeamHistory teamsHistory;
     private FifaRank homeFifaRank;
     private FifaRank awayFifaRank;
     private List<HistoricalMatch> historicalMatches;
@@ -24,20 +23,12 @@ public class Context {
     Context() {
     }
 
-    public TeamHistory getHomeTeamHistory() {
-        return homeTeamHistory;
+    public TeamHistory getTeamsHistory() {
+        return teamsHistory;
     }
 
-    void setHomeTeamHistory(TeamHistory homeTeamHistory) {
-        this.homeTeamHistory = homeTeamHistory;
-    }
-
-    public TeamHistory getAwayTeamHistory() {
-        return awayTeamHistory;
-    }
-
-    void setAwayTeamHistory(TeamHistory awayTeamHistory) {
-        this.awayTeamHistory = awayTeamHistory;
+    void setTeamsHistory(TeamHistory teamsHistory) {
+        this.teamsHistory = teamsHistory;
     }
 
     public FifaRank getHomeFifaRank() {
