@@ -37,7 +37,8 @@ public class ContextBuilder {
         context.setTeamsHistory(teamHistoryDAO.fetch(match.getHomeTeam(), match.getAwayTeam()));
 
         //Historical matches
-        context.setHistoricalMatches(matchDAO.fetchHistoryData(year));
+        context.setHistoricalMatchesHomeAway(matchDAO.fetchHistoricalMatches(match.getHomeTeam(), match.getAwayTeam()));
+        context.setHistoricalMatchesAwayHome(matchDAO.fetchHistoricalMatches(match.getAwayTeam(), match.getHomeTeam()));
 
         return context;
     }

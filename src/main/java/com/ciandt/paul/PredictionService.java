@@ -151,6 +151,7 @@ public class PredictionService {
      * Calculates the performance for a given year
      */
     Integer calculatePerformance(List<Prediction> predictions, Integer year) throws InterruptedException, DataNotAvailableException, IOException {
+        /*
         List<HistoricalMatch> actualResults = matchDAO.fetchResults(year);
         Integer total = 0;
         Integer score = 0;
@@ -159,6 +160,9 @@ public class PredictionService {
             total += score;
         }
         return total;
+
+         */
+        return 0;
     }
 
     /**

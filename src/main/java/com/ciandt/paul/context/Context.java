@@ -14,7 +14,8 @@ public class Context {
     private TeamHistory teamsHistory;
     private FifaRank homeFifaRank;
     private FifaRank awayFifaRank;
-    private List<HistoricalMatch> historicalMatches;
+    private List<HistoricalMatch> historicalMatchesHomeAway;
+    private List<HistoricalMatch> historicalMatchesAwayHome;
     private ContextBuilder contextBuilder;
 
     /**
@@ -47,13 +48,19 @@ public class Context {
         this.awayFifaRank = awayFifaRank;
     }
 
-    public List<HistoricalMatch> getHistoricalMatches() {
-        return historicalMatches;
+    public List<HistoricalMatch> getHistoricalMatchesHomeAway() {
+        return historicalMatchesHomeAway;
     }
 
-    void setHistoricalMatches(List<HistoricalMatch> historicalMatches) {
-        this.historicalMatches = historicalMatches;
+    public void setHistoricalMatchesHomeAway(List<HistoricalMatch> historicalMatchesHomeAway) {
+        this.historicalMatchesHomeAway = historicalMatchesHomeAway;
     }
 
+    public List<HistoricalMatch> getHistoricalMatchesAwayHome() {
+        return historicalMatchesAwayHome;
+    }
 
+    public void setHistoricalMatchesAwayHome(List<HistoricalMatch> historicalMatchesAwayHome) {
+        this.historicalMatchesAwayHome = historicalMatchesAwayHome;
+    }
 }

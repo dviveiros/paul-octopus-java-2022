@@ -32,11 +32,12 @@ public class MatchDAO {
 
     private static final S3Utils s3Utils = new S3Utils();
 
-    private static List<HistoricalMatch> allMatches;
+    private static Map<String, List<HistoricalMatch>> historicalCache;
     private static Map<Integer, List<Match>> matchesCache;
 
     static {
         matchesCache = new HashMap<>();
+        historicalCache = new HashMap<>();
     }
 
     /**
@@ -50,9 +51,7 @@ public class MatchDAO {
                 logger.debug("Loading " + year + " matches");
             }
 
-            List<Match> matchList = new ArrayList<>();
-            Match match = null;
-            String query = null;
+            List<Match> matchList;
 
             if (year == 2022) {
                 //load matches from this year
@@ -80,6 +79,7 @@ public class MatchDAO {
      * Load matches from 2022
      */
     private List<Match> load2022Matches() throws IOException {
+
         String matchesScheduleCSV = s3Utils.readFile( config.getDatasetBucket(), "matches-schedule.csv");
         Reader in = new StringReader(matchesScheduleCSV);
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
@@ -128,94 +128,49 @@ public class MatchDAO {
 
     /**
      * Return history data prior to this world cup
-     *
-     * @param year This method will return data prior to this year
-     * @return List of matches prior to the year ordered by year desc
      */
-    public List<HistoricalMatch> fetchHistoryData(Integer year) throws IOException, InterruptedException, DataNotAvailableException {
+    public List<HistoricalMatch> fetchHistoricalMatches(String homeTeam, String awayTeam) throws IOException {
 
-        /*
-        this.loadHistoricalMatches();
+        if (historicalCache.get(homeTeam+awayTeam) != null) {
+            return historicalCache.get(homeTeam+awayTeam);
+        }
 
-        List<HistoricalMatch> matchList = new ArrayList<>();
-        for (HistoricalMatch match : allMatches) {
-            if (match.getYear() >= year) {
+        Integer minYear = 2006;
+
+        String matchesScheduleCSV = s3Utils.readFile( config.getDatasetBucket(), "historical-results.csv");
+        Reader in = new StringReader(matchesScheduleCSV);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
+        List<HistoricalMatch> historicalMatches = new ArrayList<>();
+        HistoricalMatch historicalMatch = null;
+        for (CSVRecord record : records) {
+            String strRecordYear = record.get("date").substring(0,4);
+            Integer recordYear = Integer.parseInt(strRecordYear);
+            if (recordYear < minYear) {
                 continue;
-            } else {
-                matchList.add(match);
+            }
+
+            if ((record.get("home_score").length() == 0) || (record.get("away_score").length() == 0)) {
+                continue;
+            }
+
+            if (homeTeam.equals(record.get("home_team")) && awayTeam.equals(record.get("away_team"))) {
+                historicalMatch = new HistoricalMatch();
+                historicalMatch.setDate(record.get("date"));
+                historicalMatch.setHomeTeam(record.get("home_team"));
+                historicalMatch.setAwayTeam(record.get("away_team"));
+                historicalMatch.setHomeScore(Integer.valueOf(record.get("home_score")));
+                historicalMatch.setAwayScore(Integer.valueOf(record.get("away_score")));
+                historicalMatch.setTournament(record.get("tournament"));
+                historicalMatch.setCity(record.get("city"));
+                historicalMatch.setCountry(record.get("country"));
+                historicalMatch.setNeutral(record.get("neutral").equals("TRUE"));
+                historicalMatches.add(historicalMatch);
             }
         }
 
-        if ((matchList.size() == 0) && (year > 1930)) {
-            throw new DataNotAvailableException("HistoricalMatch", year);
-        }
+        historicalCache.put(homeTeam+awayTeam, historicalMatches);
 
-        return matchList;
-
-         */
-        return null;
-    }
-
-    /**
-     * Return the actual results for a specific year
-     *
-     * @param year Year for the results
-     * @return Results for the year
-     */
-    public List<HistoricalMatch> fetchResults(Integer year)
-            throws IOException, InterruptedException, DataNotAvailableException {
-
-        /*
-        this.loadHistoricalMatches();
-
-        List<HistoricalMatch> matchList = new ArrayList<>();
-        for (HistoricalMatch match : allMatches) {
-            if (match.getYear().equals(year)) {
-                matchList.add(match);
-            }
-        }
-
-        if (matchList.size() == 0) {
-            throw new DataNotAvailableException("HistoricalMatch", year);
-        }
-
-        return matchList;
-
-         */
-        return null;
-    }
-
-
-
-    /**
-     * Load historical matches
-     */
-    private void loadHistoricalMatches() throws IOException, InterruptedException {
-        /*
-        //check the cache
-        if (allMatches == null) {
-            allMatches = new ArrayList<>();
-
-            if (config.isDebugEnabled()) {
-                logger.debug("Loading history matches data");
-            }
-
-
-            HistoricalMatch match = null;
-            String query = "SELECT * FROM paul_the_octopus_dataset.matches_history order by year desc";
-            List<List<String>> queryResult = bigQueryUtils.executeQuery(query);
-
-            for (List<String> row : queryResult) {
-                match = new HistoricalMatch(row);
-                allMatches.add(match);
-            }
-
-            if (config.isDebugEnabled()) {
-                logger.debug("Data loaded. Found " + allMatches.size() + " games");
-            }
-        }
-
-         */
+        return historicalMatches;
     }
 
 }
