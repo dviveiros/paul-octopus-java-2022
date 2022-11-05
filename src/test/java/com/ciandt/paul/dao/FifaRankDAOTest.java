@@ -12,7 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 /**
@@ -35,31 +34,31 @@ public class FifaRankDAOTest {
 
     @Test
     public void shouldFetchFifaRankFor2018() throws Exception {
-        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2018);
+        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2018, "05");
         assertNotNull(fifaRankList);
     }
 
     @Test
     public void shouldFetchFifaRankFor2022() throws Exception {
-        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2018);
+        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2018,"05");
         assertNotNull(fifaRankList);
     }
 
     @Test
     public void shouldFetchFifaRankFor2006() throws Exception {
-        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2006);
+        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2006,"05");
         assertNotNull(fifaRankList);
     }
 
     @Test
     public void shouldFetchFifaRankFor2010() throws Exception {
-        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2010);
+        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2010,"05");
         assertNotNull(fifaRankList);
     }
 
     @Test
     public void shouldFetchFifaRankFor2014() throws Exception {
-        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2014);
+        List<FifaRank> fifaRankList = fifaRankDAO.fetch(2014,"05");
         assertNotNull(fifaRankList);
     }
 

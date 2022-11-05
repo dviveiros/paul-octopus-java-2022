@@ -2,7 +2,6 @@ package com.ciandt.paul.dao;
 
 import com.ciandt.paul.Config;
 import com.ciandt.paul.entity.FifaRank;
-import com.ciandt.paul.entity.Match;
 import com.ciandt.paul.utils.S3Utils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
@@ -57,7 +56,22 @@ public class FifaRankDAO {
             teamName = "USA";
         }
 
-        List<FifaRank> fifaRankList = this.fetch(year);
+        String month = "05";
+        if (year == 2022) {
+            month = "08";
+        }
+        String backupMonth = "07";
+
+        List<FifaRank> fifaRankList = this.fetch(year, month);
+        for (FifaRank fifaRank : fifaRankList) {
+            if (teamName.equals(fifaRank.getTeamName())) {
+                return fifaRank;
+            }
+        }
+
+        logger.debug("Ranking not found for " + teamName + " in " + year + "-" + month + ". Trying month" + backupMonth);
+        cache.remove(year);
+        fifaRankList = this.fetch(year, backupMonth);
         for (FifaRank fifaRank : fifaRankList) {
             if (teamName.equals(fifaRank.getTeamName())) {
                 return fifaRank;
@@ -70,7 +84,7 @@ public class FifaRankDAO {
     /**
      * Read the rank for a specific year
      */
-    public List<FifaRank> fetch(Integer year) throws IOException, InterruptedException, DataNotAvailableException {
+    public List<FifaRank> fetch(Integer year, String month) throws IOException, InterruptedException, DataNotAvailableException {
 
         //check the cache
         if (cache.get(year) != null) {
@@ -80,16 +94,11 @@ public class FifaRankDAO {
         List<FifaRank> fifaRankList = new ArrayList<>();
         FifaRank fifaRank = null;
 
-        String rankMonth = "-07"; //July as the reference for Fifa Rank
-        if (year == 2022) {
-            rankMonth = "-08"; //for 2022, we'll use August
-        }
-
         String fifaRankingCSV = s3Utils.readFile( config.getDatasetBucket(), "ranking.csv");
         Reader in = new StringReader(fifaRankingCSV);
         Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
         for (CSVRecord record : records) {
-            if (record.get("rank_date").startsWith(year.toString()+ rankMonth)) {
+            if (record.get("rank_date").startsWith(year.toString() + "-"  + month)) {
                 fifaRank = new FifaRank();
                 fifaRank.setRank(Integer.valueOf(record.get("rank")));
                 fifaRank.setTeamCode(record.get("country_abrv"));
