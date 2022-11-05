@@ -10,7 +10,6 @@ import com.ciandt.paul.entity.Prediction;
 import com.ciandt.paul.utils.S3Utils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,21 +26,18 @@ import java.util.List;
 @Service
 public class PredictionService {
 
-    private static Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PredictionService.class.getName());
 
     @Autowired
     private Config config;
-
     @Autowired
     private MatchDAO matchDAO;
     @Autowired
     private ContextBuilder contextBuilder;
     @Autowired
     private PredictorFactory predictorFactory;
-    @Autowired
-    private S3Utils gcsUtils;
 
-    private static DecimalFormat decimalFormat = new DecimalFormat("#,##0.0000 %");
+    private static final DecimalFormat decimalFormat = new DecimalFormat("#,##0.0000 %");
 
     /**
      * Start the prediction process
@@ -65,7 +61,7 @@ public class PredictionService {
         List<Prediction> predictionList2022 = this.predict(predictor, worldCupYear);
 
         //Predictions for the past (training data)
-        List<Prediction> predictionsForTraining = null;
+        List<Prediction> predictionsForTraining;
         for (int i = 0; i < trainingYears.length; i++) {
             logger.info("Predicting results for year: " + trainingYears[i]);
             predictionsForTraining = this.predict(predictor, trainingYears[i]);
@@ -94,7 +90,7 @@ public class PredictionService {
             bufferedWriter.write(csvContent);
             bufferedWriter.flush();
             bufferedWriter.close();
-            logger.info("File created successfully. Run './paul.sh -c upload -u <username>' to upload it.");
+            logger.info("File created successfully. Remember to upload it to your shared folder with the source code.");
         }
     }
 
@@ -105,10 +101,10 @@ public class PredictionService {
             throws InterruptedException, DataNotAvailableException, IOException {
         List<Prediction> predictions = new ArrayList<>();
 
-        List<Match> matchList = null;
+        List<Match> matchList;
         matchList = matchDAO.fetch(year);
 
-        Prediction prediction = null;
+        Prediction prediction;
         for (Match match : matchList) {
             Context context = contextBuilder.build(match, year);
             prediction = predictor.predict(match, context);
@@ -151,25 +147,21 @@ public class PredictionService {
      * Calculates the performance for a given year
      */
     Integer calculatePerformance(List<Prediction> predictions, Integer year) throws InterruptedException, DataNotAvailableException, IOException {
-        /*
+
         List<HistoricalMatch> actualResults = matchDAO.fetchResults(year);
         Integer total = 0;
-        Integer score = 0;
+        Integer score;
         for (Prediction prediction : predictions) {
             score = this.calculateScore(prediction, actualResults);
             total += score;
         }
         return total;
-
-         */
-        return 0;
     }
 
     /**
      * Calculates the score for a prediction according to the rules of the competition
      */
-    Integer calculateScore(Prediction prediction, List<HistoricalMatch> actualResults)
-            throws InterruptedException, DataNotAvailableException, IOException {
+    Integer calculateScore(Prediction prediction, List<HistoricalMatch> actualResults) {
 
         //find the appropriate match
         Match match = prediction.getMatch();

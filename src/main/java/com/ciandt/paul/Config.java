@@ -8,11 +8,12 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class Config {
 
+    //TODO Change your bucket name here
+    private String datasetBucket = "paul-viveiros";
+
     private Integer worldCupYear = 2022;
     private Integer[] trainingYears = {2006, 2010, 2014, 2018};
     private String debug = "false";
-    //TODO Change your bucket name here
-    private String datasetBucket = "paul-viveiros";
     private String predictionsFilename = "predictions.csv";
     private Integer maxScorePerWorldCup = 25 * 48;
     private String defaultPredictor = "DefaultPredictor";

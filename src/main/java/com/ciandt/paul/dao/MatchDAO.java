@@ -33,11 +33,13 @@ public class MatchDAO {
     private static final S3Utils s3Utils = new S3Utils();
 
     private static Map<String, List<HistoricalMatch>> historicalCache;
+    private static Map<Integer, List<HistoricalMatch>> resultsCache;
     private static Map<Integer, List<Match>> matchesCache;
 
     static {
         matchesCache = new HashMap<>();
         historicalCache = new HashMap<>();
+        resultsCache = new HashMap<>();
     }
 
     /**
@@ -73,6 +75,49 @@ public class MatchDAO {
 
             return matchList;
         }
+    }
+
+    /**
+     * Load matches from 2022
+     */
+    public List<HistoricalMatch> fetchResults(Integer year) throws IOException {
+
+        if (resultsCache.get(year) != null) {
+            return resultsCache.get(year);
+        }
+
+        String matchesScheduleCSV = s3Utils.readFile( config.getDatasetBucket(), "historical-results.csv");
+        Reader in = new StringReader(matchesScheduleCSV);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
+        List<HistoricalMatch> matchList = new ArrayList<>();
+        HistoricalMatch historicalMatch = null;
+        int count = 0;
+        for (CSVRecord record : records) {
+            if (!record.get("tournament").equals("FIFA World Cup")) {
+                continue;
+            }
+            if (!record.get("date").startsWith(year.toString())) {
+                continue;
+            }
+            historicalMatch = new HistoricalMatch();
+            historicalMatch.setDate(record.get("date"));
+            historicalMatch.setHomeTeam(record.get("home_team"));
+            historicalMatch.setAwayTeam(record.get("away_team"));
+            historicalMatch.setHomeScore(Integer.valueOf(record.get("home_score")));
+            historicalMatch.setAwayScore(Integer.valueOf(record.get("away_score")));
+            historicalMatch.setTournament(record.get("tournament"));
+            historicalMatch.setCity(record.get("city"));
+            historicalMatch.setCountry(record.get("country"));
+            historicalMatch.setNeutral(record.get("neutral").equals("TRUE"));
+            matchList.add(historicalMatch);
+            count++;
+            if (count == 48) {
+                //just group phase, first 48 games
+                break;
+            }
+        }
+        resultsCache.put(year, matchList);
+        return matchList;
     }
 
     /**
