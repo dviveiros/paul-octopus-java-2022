@@ -53,13 +53,31 @@ Steps to install and configure the project:
    b) Create an ACCESS KEY ID and SECURITY ACCESS KEY to allow the solution to read data from it securely;
    c) Create two environment variables as presented bellow:
    ```
-   export AWS_ACCESS_KEY=<your access key>
-   export AWS_SECRET_KEY=<your secret key>
+   export AWS_ACCESS_KEY_ID=<your access key>
+   export AWS_SECRET_ACCESS_KEY=<your secret key>
    ```
    d) Change the name of the bucket in the source code. There is one "TODO" mark in file Config.java for that.
    ```
    //TODO Change your bucket name here
     private String datasetBucket = "<your bucket name goes here>";
+   ```
+   
+   **!!! SHORTCUT if you are using our internal AWS environment !!!**
+
+   Just go to https://ciandt.awsapps.com/start#/
+   Use your login (with our @ciandt.com) as the username
+   Use your corporate password as the password
+   Expand the "GU Gemini.Engagement-Operation" tab
+   Click on "Command line or programmatic access"
+   You will see the keys there. In this case, they rely on a session, so you'll need to create another environment variable with this info. And it will expire after some time... so you need to re-do the process again.
+   ```
+   export AWS_ACCESS_KEY_ID=<your access key>
+   export AWS_SECRET_ACCESS_KEY=<your secret key>
+   export AWS_SESSION_TOKEN=<your session token>
+   ```
+   In this case, the bucket name is already configured in Config.java
+   ```
+   private String datasetBucket = "paul-octopus-2022";
    ```
 
 5. Test your installation: 

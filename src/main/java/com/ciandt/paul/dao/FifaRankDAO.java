@@ -69,7 +69,6 @@ public class FifaRankDAO {
             }
         }
 
-        logger.debug("Ranking not found for " + teamName + " in " + year + "-" + month + ". Trying month" + backupMonth);
         cache.remove(year);
         fifaRankList = this.fetch(year, backupMonth);
         for (FifaRank fifaRank : fifaRankList) {

@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class Config {
 
     //TODO Change your bucket name here
-    private String datasetBucket = "paul-viveiros";
+    private String datasetBucket = "paul-octopus-2022";
 
     private Integer worldCupYear = 2022;
     private Integer[] trainingYears = {2006, 2010, 2014, 2018};
