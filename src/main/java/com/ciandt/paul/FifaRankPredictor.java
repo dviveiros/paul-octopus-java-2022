@@ -18,8 +18,8 @@ public class FifaRankPredictor implements Predictor {
         FifaRank awayRank = context.getAwayFifaRank();
         Prediction prediction = new Prediction(match);
 
-        logger.debug("FifaRank Prediction: " + match.getHomeTeam() + " (" + homeRank.getRank()
-                + ") x " + match.getAwayTeam() + " (" + awayRank.getRank() + ")");
+//        logger.debug("FifaRank Prediction: " + match.getHomeTeam() + " (" + homeRank.getRank()
+//                + ") x " + match.getAwayTeam() + " (" + awayRank.getRank() + ")");
 
 
         if (homeRank.getRank() < awayRank.getRank()) {

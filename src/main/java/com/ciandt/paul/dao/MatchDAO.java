@@ -174,13 +174,13 @@ public class MatchDAO {
     /**
      * Return history data prior to this world cup
      */
-    public List<HistoricalMatch> fetchHistoricalMatches(String homeTeam, String awayTeam) throws IOException {
+    public List<HistoricalMatch> fetchHistoricalMatches(String homeTeam, String awayTeam, Integer year) throws IOException {
 
         if (historicalCache.get(homeTeam+awayTeam) != null) {
             return historicalCache.get(homeTeam+awayTeam);
         }
 
-        Integer minYear = 2006;
+        Integer minYear = 1990;
 
         String matchesScheduleCSV = s3Utils.readFile( config.getDatasetBucket(), "historical-results.csv");
         Reader in = new StringReader(matchesScheduleCSV);
@@ -193,7 +193,9 @@ public class MatchDAO {
             if (recordYear < minYear) {
                 continue;
             }
-
+            if (recordYear >= year ) {
+                continue;
+            }
             if ((record.get("home_score").length() == 0) || (record.get("away_score").length() == 0)) {
                 continue;
             }
