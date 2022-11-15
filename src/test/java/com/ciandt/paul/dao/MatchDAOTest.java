@@ -52,7 +52,7 @@ public class MatchDAOTest {
 
     @Test
     public void shouldFetchBrazilAndArgentinaHistoricalMatches() throws Exception {
-        List<HistoricalMatch> historicalMatches = matchDAO.fetchHistoricalMatches( "Brazil", "Argentina");
+        List<HistoricalMatch> historicalMatches = matchDAO.fetchHistoricalMatches( "Brazil", "Argentina", 2022);
         assertNotNull(historicalMatches);
         assertTrue( "Size must be higher than zero", historicalMatches.size() > 0);
     }
