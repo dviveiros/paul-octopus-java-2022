@@ -176,8 +176,8 @@ public class MatchDAO {
      */
     public List<HistoricalMatch> fetchHistoricalMatches(String homeTeam, String awayTeam, Integer year) throws IOException {
 
-        if (historicalCache.get(homeTeam+awayTeam) != null) {
-            return historicalCache.get(homeTeam+awayTeam);
+        if (historicalCache.get(homeTeam+awayTeam+year) != null) {
+            return historicalCache.get(homeTeam+awayTeam+year);
         }
 
         Integer minYear = 1990;
@@ -215,7 +215,7 @@ public class MatchDAO {
             }
         }
 
-        historicalCache.put(homeTeam+awayTeam, historicalMatches);
+        historicalCache.put(homeTeam+awayTeam+year, historicalMatches);
 
         return historicalMatches;
     }
