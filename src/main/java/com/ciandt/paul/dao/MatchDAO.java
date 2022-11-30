@@ -45,6 +45,17 @@ public class MatchDAO {
     /**
      * Return the matches to be predicted for a specific year
      */
+    public List<Match> fetch(Integer year, String round) throws IOException, InterruptedException, DataNotAvailableException {
+        if ("group".equals(round)) {
+            return this.fetch(year);
+        } else {
+            return this.load2022Matches(round);
+        }
+    }
+
+    /**
+     * Return the matches to be predicted for a specific year
+     */
     public List<Match> fetch(Integer year) throws IOException, InterruptedException, DataNotAvailableException {
         if (matchesCache.get(year) != null) {
             return matchesCache.get(year);
@@ -136,6 +147,30 @@ public class MatchDAO {
             match.setHomeTeam(record.get("country1"));
             match.setAwayTeam(record.get("country2"));
             matchList.add(match);
+        }
+        return matchList;
+    }
+
+    /**
+     * Load matches from 2022
+     */
+    private List<Match> load2022Matches(String strRound) throws IOException {
+
+        String matchesScheduleCSV = s3Utils.readFile( config.getDatasetBucket(), "playoffs-schedule.csv");
+        Reader in = new StringReader(matchesScheduleCSV);
+        Iterable<CSVRecord> records = CSVFormat.DEFAULT.withHeader().parse(in);
+        List<Match> matchList = new ArrayList<>();
+        Match match = null;
+        String strPhase = null;
+        for (CSVRecord record : records) {
+            strPhase = record.get("phase");
+            if ( strRound.equals(strPhase) ) {
+                match = new Match();
+                match.setYear(2022);
+                match.setHomeTeam(record.get("country1"));
+                match.setAwayTeam(record.get("country2"));
+                matchList.add(match);
+            }
         }
         return matchList;
     }

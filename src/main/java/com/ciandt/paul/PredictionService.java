@@ -7,7 +7,6 @@ import com.ciandt.paul.dao.MatchDAO;
 import com.ciandt.paul.entity.HistoricalMatch;
 import com.ciandt.paul.entity.Match;
 import com.ciandt.paul.entity.Prediction;
-import com.ciandt.paul.utils.S3Utils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.slf4j.Logger;
@@ -15,7 +14,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +46,7 @@ public class PredictionService {
      * @param generateFile If this method should generate the predictions.csv file or not
      * @param strPredictor Name of the Predictor class to be used
      */
-    public void predict(Boolean generateFile, String strPredictor)
+    public void predict(Boolean generateFile, String strPredictor, String strRound)
             throws InterruptedException, DataNotAvailableException, IOException {
 
         //Year to be predicted
@@ -55,31 +57,38 @@ public class PredictionService {
         Double totalPerformance = 0d;
 
         Predictor predictor = predictorFactory.createsPredictor(strPredictor);
+        List<Prediction> predictionList2022 = null;
 
-        //Predictions for current world cup
-        logger.info("Predicting results for year: " + worldCupYear);
-        List<Prediction> predictionList2022 = this.predict(predictor, worldCupYear);
+        if ("group".equals(strRound)) {
+            //Predictions for current world cup
+            logger.info("Predicting results for year: " + worldCupYear);
+            predictionList2022 = this.predict(predictor, worldCupYear);
 
-        //Predictions for the past (training data)
-        List<Prediction> predictionsForTraining;
-        for (int i = 0; i < trainingYears.length; i++) {
-            logger.info("Predicting results for year: " + trainingYears[i]);
-            predictionsForTraining = this.predict(predictor, trainingYears[i]);
-            trainingScores[i] = this.calculatePerformance(predictionsForTraining, trainingYears[i]);
-            trainingPerformance[i] = Double.valueOf(trainingScores[i]) / config.getMaxScorePerWorldCup();
-            totalPerformance += trainingPerformance[i];
+            //Predictions for the past (training data)
+            List<Prediction> predictionsForTraining;
+            for (int i = 0; i < trainingYears.length; i++) {
+                logger.info("Predicting results for year: " + trainingYears[i]);
+                predictionsForTraining = this.predict(predictor, trainingYears[i]);
+                trainingScores[i] = this.calculatePerformance(predictionsForTraining, trainingYears[i]);
+                trainingPerformance[i] = Double.valueOf(trainingScores[i]) / config.getMaxScorePerWorldCup();
+                totalPerformance += trainingPerformance[i];
+            }
+
+            // Final output
+            logger.info("**********************************************");
+            logger.info("* Algorithm performance");
+            for (int i = 0; i < trainingYears.length; i++) {
+                logger.info("* " + trainingYears[i] + ": Score = " + trainingScores[i]
+                        + ", Performance = " + decimalFormat.format(trainingPerformance[i]));
+            }
+            logger.info("* ");
+            logger.info("* Overall performance = " + decimalFormat.format(totalPerformance / trainingYears.length));
+            logger.info("**********************************************");
+        } else {
+            //Predictions for current world cup
+            logger.info("Predicting results for year " + worldCupYear + ", round = " + strRound);
+            predictionList2022 = this.predict(predictor, worldCupYear, strRound);
         }
-
-        // Final output
-        logger.info("**********************************************");
-        logger.info("* Algorithm performance");
-        for (int i = 0; i < trainingYears.length; i++) {
-            logger.info("* " + trainingYears[i] + ": Score = " + trainingScores[i]
-                    + ", Performance = " + decimalFormat.format(trainingPerformance[i]));
-        }
-        logger.info("* ");
-        logger.info("* Overall performance = " + decimalFormat.format(totalPerformance / trainingYears.length));
-        logger.info("**********************************************");
 
         //Generate file?
         if (generateFile) {
@@ -92,6 +101,29 @@ public class PredictionService {
             bufferedWriter.close();
             logger.info("File created successfully. Remember to upload it to your shared folder with the source code.");
         }
+    }
+
+    /**
+     * Predict the results for a world cup
+     */
+    List<Prediction> predict(Predictor predictor, Integer year, String round)
+            throws InterruptedException, DataNotAvailableException, IOException {
+        List<Prediction> predictions = new ArrayList<>();
+
+        List<Match> matchList;
+        matchList = matchDAO.fetch(year, round);
+
+        Prediction prediction;
+        for (Match match : matchList) {
+            Context context = contextBuilder.build(match, year);
+            prediction = predictor.predict(match, context);
+            if (config.isDebugEnabled()) {
+                logger.debug("New prediction for World Cup " + year + ", round = " + round + ": " + prediction);
+            }
+            predictions.add(prediction);
+        }
+
+        return predictions;
     }
 
     /**

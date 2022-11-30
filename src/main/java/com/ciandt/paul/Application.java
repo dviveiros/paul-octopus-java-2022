@@ -43,9 +43,13 @@ public class Application implements CommandLineRunner {
         output.setRequired(false);
         options.addOption(file);
 
-        Option predictor = new Option("p", "predictor", true, "username / login (required for 'upload' command)");
+        Option predictor = new Option("p", "predictor", true, "predictor (name of the class) to be used");
         output.setRequired(false);
         options.addOption(predictor);
+
+        Option round = new Option("r", "round", true, "round to run the predictions: group, 16, 8, semifinals, finals");
+        output.setRequired(false);
+        options.addOption(round);
 
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
@@ -70,6 +74,9 @@ public class Application implements CommandLineRunner {
             strPredictor = config.getDefaultPredictor();
         }
 
+        String strRound = cmd.getOptionValue( "round", "group" );
+        logger.debug("Round = " + strRound );
+
         //log the arguments
         if (config.isDebugEnabled()) {
             logger.debug("Application started with " + args.length + " arguments");
@@ -83,7 +90,7 @@ public class Application implements CommandLineRunner {
 
         //prediction
         try {
-            predictionService.predict(generateFile, strPredictor);
+            predictionService.predict(generateFile, strPredictor, strRound);
         } catch (Exception e) {
             logger.error("Error creating prediction", e);
             System.exit(1);
